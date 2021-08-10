@@ -67,6 +67,31 @@
         const searchForm = document.querySelector('#search-form');
         searchForm.addEventListener('submit', moveLocation);
 
+        // 좌표 이동 시 상단 주소 변경
+
+        kakao.maps.event.addListener(map, 'idle', function() {
+            searchAddrFromCoords(map.getCenter(), displayCenterInfo);
+        });
+
+        function searchAddrFromCoords(coords, callback) {
+            geocoder.coord2RegionCode(coords.getLng(), coords.getLat(), callback);
+        }
+
+        // 지도 중심 좌표에 대한 주소 정보를 표출하는 함수
+        function displayCenterInfo(result, status) {
+            if (status === kakao.maps.services.Status.OK) {
+                var infoDiv = document.querySelector('.address');
+
+                for(var i = 0; i < result.length; i++) {
+                    // 행정동의 region_type 값은 'H'
+                    if (result[i].region_type === 'H') {
+                        infoDiv.innerHTML = result[i].address_name;
+                        break;
+                    }
+                }
+            }
+        }
+
     </script>
 {% endblock %}
 
