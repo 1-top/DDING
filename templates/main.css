@@ -1,0 +1,82 @@
+@import url('https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap');
+
+body {
+    margin-top: 80px;
+    margin-bottom: 80px;
+    width: 100%;
+    height: 100%;
+    background-color: white;
+}
+
+header {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 80px;
+    background: white;
+    color:skyblue;
+    font-family: 'Jua', sans-serif;
+    font-size: 30px;
+    vertical-align: middle;
+    padding-left: 30px;
+    padding-top: 20px;
+}
+
+footer {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 80px%;
+    color: white;
+    background: linear-gradient(to right, skyblue, yellow);
+    font-family: 'Jua', sans-serif;
+    font-size: 20px;
+    text-align: center;
+    padding-top: 20px;
+}
+
+#main {
+    width: 100%;
+    height: 600px;
+    background-image: url(map.jpg);   
+    background-size: cover;
+    position: fixed;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+#main::before{
+    content: "";
+    width: 100%;
+    height: 600px;
+    background-color: skyblue;
+    opacity: 0.5;
+    position:absolute;
+    top:0;
+    left:0;
+    z-index: 0;
+}
+
+#main h2 {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-weight: 600;
+    font-size: 40px;
+    z-index: 1;
+}
+
+#main-btn {
+    background-color: white;
+    width: 20%;
+    height: 40px;
+    border-radius: 20px;
+    border-width: 0px;
+    font-family: 'Noto Sans KR', sans-serifs;
+    font-weight: 500;
+    font-size: 15px;
+    z-index: 1;   
+}

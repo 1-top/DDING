@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% endblock %}
+{% block link %}{% static 'css/main.css' %}{% endblock %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+    <header>띵세권</header>
+    <div id="main">
+        <h2>지금 당장 띵해지고 싶을 때<br>가장 가까운 가게를 찾아드려요!</h2>
+        <button id="main-btn">지금 당장 띵해지기</button>
+    </div>
+    <footer>DDING</footer>
+</div>
+</body>
+{% endblock %}
+
