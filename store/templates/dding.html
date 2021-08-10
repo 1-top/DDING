@@ -16,18 +16,18 @@
         </form>
     </div>
     <script type="text/javascript"
-            src="//dapi.kakao.com/v2/maps/sdk.js?appkey=5b5c8c5d40569228a882e23eaf28a4ce&libraries=services,clusterer,drawing"></script>
+            src="//dapi.kakao.com/v2/maps/sdk.js?appkey={{ key }}&libraries=services,clusterer,drawing"></script>
     <script>
         const mapContainer = document.getElementById('map');
         const mapOption = {
             center: new kakao.maps.LatLng(33.450701, 126.570667),
             level: 4
         };
-        // 지도를 생성합니다
+        // 지도 생성
         const map = new kakao.maps.Map(mapContainer, mapOption);
-        // 주소-좌표 변환 객체를 생성합니다
-        const geocoder = new kakao.maps.services.Geocoder();
 
+        // 주소-좌표 변환 객체 생성
+        const geocoder = new kakao.maps.services.Geocoder();
 
         window.addEventListener('load', () => {
             kakao.maps.load(() => {
@@ -46,6 +46,26 @@
                 }
             })
         })
+
+        // 위치 검색 후 이동
+
+        const changeMapCenter = (address) => {
+            geocoder.addressSearch(address, function(result, status) {
+                if (status === kakao.maps.services.Status.OK) {
+                    var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+                    map.setCenter(coords);
+                }
+            });
+        }
+
+        const moveLocation = (e) => {
+            e.preventDefault();
+            let address = e.target.elements.address.value;
+            changeMapCenter(address);
+        }
+
+        const searchForm = document.querySelector('#search-form');
+        searchForm.addEventListener('submit', moveLocation);
 
     </script>
 {% endblock %}

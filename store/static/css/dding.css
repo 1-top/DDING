@@ -17,14 +17,37 @@
 }
 
 .show-address {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     width: 100%;
     height: 35px;
     border-radius: 5px 5px 0 0;
     background-color: #a7e6d6;
 }
 
+.address {
+    position: relative;
+    font-size: 14px;
+    color: #222;
+}
+
 .search-box form {
     position: relative;
+}
+
+.search-box form::before {
+    position: absolute;
+    top: 50%;
+    left: 18px;
+    content: '';
+    width: 15px;
+    height: 15px;
+    transform: translateY(-50%);
+    background-image: url("/static/images/search.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
 }
 
 .search-box input {
