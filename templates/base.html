@@ -6,12 +6,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'css/base.css' %}" />
-    <link rel="stylesheet" href="{% block link %}{% endblock %}" />
+    <link rel="stylesheet" href="{% static 'css/base.css' %}"/>
+    <link rel="stylesheet" href="{% block link %}{% endblock %}"/>
 </head>
 <body>
-    {% block content %}
-    {% endblock %}
-    <script src="{% block script %}{% endblock %}"></script>
+<header>띵세권</header>
+{% block content %}
+{% endblock %}
+<footer>DDING</footer>
+
+<script src="{% block script %}{% endblock %}"></script>
 </body>
 </html>
