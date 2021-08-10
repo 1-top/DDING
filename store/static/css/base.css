@@ -5,6 +5,10 @@
     font-style: normal;
 }
 
+* {
+    box-sizing: border-box;
+}
+
 h1 {
     font-family: 'Cafe24Ssurround', serif;
 }
@@ -42,6 +46,9 @@ footer, header, hgroup, menu, nav, section {
 }
 
 body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
     line-height: 1;
 }
 
@@ -64,6 +71,12 @@ table {
     border-spacing: 0;
 }
 
+input:focus,
+input:active {
+    outline: none;
+    box-shadow: none;
+}
+
 header {
     /*position: fixed;*/
     /*left: 0;*/
@@ -72,11 +85,10 @@ header {
     height: 50px;
     background: #f4fcff;
     color: #72d5e4;
-    font-family: 'Jua', sans-serif;
+    font-family: 'Cafe24Ssurround', sans-serif;
     font-size: 32px;
-    /*vertical-align: middle;*/
-    padding-left: 30px;
-    padding-top: 20px;
+    line-height: 1.75;
+    padding: 0 30px;
 }
 
 footer {
@@ -89,6 +101,7 @@ footer {
     background: linear-gradient(to right, #7fe0eb, #c8ecc5, #f1f2b0);
     font-family: 'Jua', sans-serif;
     font-size: 20px;
+    line-height: 2.6;
     text-align: center;
-    padding-top: 24px;
+    z-index: 1;
 }

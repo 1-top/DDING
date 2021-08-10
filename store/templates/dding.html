@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block link %}
+    {% static 'css/dding.css' %}
+{% endblock %}
+
+{% block content %}
+    <div id="map"></div>
+    <div class="search-box">
+        <div class="show-address">
+            <p class="address"></p>
+        </div>
+        <form action="#" id="search-form">
+            <input type="text" name="address" placeholder="어디에서 찾으세요?"/>
+        </form>
+    </div>
+    <script type="text/javascript"
+            src="//dapi.kakao.com/v2/maps/sdk.js?appkey=5b5c8c5d40569228a882e23eaf28a4ce&libraries=services,clusterer,drawing"></script>
+    <script>
+        const mapContainer = document.getElementById('map');
+        const mapOption = {
+            center: new kakao.maps.LatLng(33.450701, 126.570667),
+            level: 4
+        };
+        // 지도를 생성합니다
+        const map = new kakao.maps.Map(mapContainer, mapOption);
+        // 주소-좌표 변환 객체를 생성합니다
+        const geocoder = new kakao.maps.services.Geocoder();
+
+
+        window.addEventListener('load', () => {
+            kakao.maps.load(() => {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition((position) => {
+                        const {coords: {longitude: lng, latitude: lat}} = position
+                        geocoder.coord2RegionCode(lng, lat, (result, status) => {
+                            if (status === kakao.maps.services.Status.OK) {
+                                pAddress = document.querySelector('.address')
+                                pAddress.innerHTML = result[0].address_name;
+                                console.log(result[0].address_name)
+                            }
+                        });
+                        map.setCenter(new kakao.maps.LatLng(lat, lng))
+                    });
+                }
+            })
+        })
+
+    </script>
+{% endblock %}
+
