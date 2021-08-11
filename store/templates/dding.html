@@ -31,13 +31,13 @@
             </div>
             <div class="location-container">
                 <h4>위치</h4>
-                <input type="text" name="location" id="location" placeholder="위치를 선택해주세요" readonly />
-                <input type="hidden" name="latitude" id="latitude" value="" />
-                <input type="hidden" name="longitude" id="longitude" value="" />
+                <input type="text" name="location" id="location" placeholder="위치를 선택해주세요" readonly/>
+                <input type="hidden" name="latitude" id="latitude" value=""/>
+                <input type="hidden" name="longitude" id="longitude" value=""/>
             </div>
             <div>
                 <h4>가게 이름</h4>
-                <input type="text" name="storename" id="storename" placeholder="가게 이름을 입력해주세요" />
+                <input type="text" name="storename" id="storename" placeholder="가게 이름을 입력해주세요"/>
             </div>
             <button type="submit"><img src="{% static 'images/right-arrow.png' %}" alt="" width="15" height="15">
                 제보하기
@@ -68,7 +68,17 @@
 
         // 윈도우 로드 시 사용자 위치 가져오기
         window.addEventListener('load', () => {
-            kakao.maps.load(() => {
+            let myLocation = sessionStorage.getItem('location');
+            if (myLocation) {
+                let {longitude, latitude} = JSON.parse(sessionStorage.getItem('location'));
+                geocoder.coord2RegionCode(longitude, latitude, (result, status) => {
+                    if (status === kakao.maps.services.Status.OK) {
+                        pAddress = document.querySelector('.address')
+                        pAddress.innerHTML = result[0].address_name;
+                    }
+                });
+                map.setCenter(new kakao.maps.LatLng(latitude, longitude))
+            } else {
                 if (navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition((position) => {
                         const {coords: {longitude: lng, latitude: lat}} = position
@@ -82,7 +92,7 @@
                         map.setCenter(new kakao.maps.LatLng(lat, lng))
                     });
                 }
-            })
+            }
         })
 
         // 위치 검색 후 이동
@@ -208,13 +218,13 @@
             })
         {% endfor %}
 
-        for (var i = 0; i < positions.length; i ++) {
+        for (var i = 0; i < positions.length; i++) {
             // 마커 생성
             var marker = new kakao.maps.Marker({
                 map: map, // 마커를 표시할 지도
                 position: positions[i].latlng, // 마커를 표시할 위치
-                title : positions[i].title, // 마커의 타이틀, 마커에 마우스를 올리면 타이틀이 표시됩니다
-                image : markerImage // 마커 이미지
+                title: positions[i].title, // 마커의 타이틀, 마커에 마우스를 올리면 타이틀이 표시됩니다
+                image: markerImage // 마커 이미지
             });
         }
 
@@ -228,20 +238,20 @@
         igloo.addEventListener('click', () => {
             //if(메뉴 선택){
             var marker = new kakao.maps.Marker(), // 클릭한 위치를 표시할 마커입니다
-                infowindow = new kakao.maps.InfoWindow({zindex:1}); // 클릭한 위치에 대한 주소를 표시할 인포윈도우입니다
+                infowindow = new kakao.maps.InfoWindow({zindex: 1}); // 클릭한 위치에 대한 주소를 표시할 인포윈도우입니다
 
             // 현재 지도 중심좌표로 주소를 검색해서 지도 좌측 상단에 표시합니다
             searchAddrFromCoords(map.getCenter(), displayCenterInfo);
 
             // 지도를 클릭했을 때 클릭 위치 좌표에 대한 주소정보를 표시하도록 이벤트를 등록합니다
-            kakao.maps.event.addListener(map, 'click', function(mouseEvent) {
-                searchDetailAddrFromCoords(mouseEvent.latLng, function(result, status) {
+            kakao.maps.event.addListener(map, 'click', function (mouseEvent) {
+                searchDetailAddrFromCoords(mouseEvent.latLng, function (result, status) {
                     if (status === kakao.maps.services.Status.OK) {
                         var detailAddr = !!result[0].road_address ? '<div>도로명주소:' + result[0].road_address.address_name + '</div>' : '';
-                        detailAddr += '<div>지번 주소 : ' +  result[0].address.address_name + '</div>';
+                        detailAddr += '<div>지번 주소 : ' + result[0].address.address_name + '</div>';
 
                         var content = '<div style="padding:30px;">' +
-                            detailAddr +  " " + " " +
+                            detailAddr + " " + " " +
                             '</div>';
 
                         // 마커를 클릭한 위치에 표시합니다
