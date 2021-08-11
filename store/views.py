@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
 # Create your views here.
 from DDING.settings import get_secret
@@ -21,5 +21,7 @@ def dding(request):
         category, _ = Category.objects.get_or_create(name=_category)
         if category and location and storename and latitude and longitude:
             Report(category=category, location=location, name=storename, latitude=latitude, longitude=longitude).save()
-
-    return render(request, 'dding.html', {'key': SECRET_KEY})
+            return redirect('dding')
+    else:
+        storeList = Report.objects.all()
+        return render(request, 'dding.html', {'storeList': storeList, 'key': SECRET_KEY})
