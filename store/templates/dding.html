@@ -140,7 +140,7 @@
         // 지도 중심 좌표에 대한 주소 정보를 가져오는 함수
         function coordToLocation(result, status) {
             if (status === kakao.maps.services.Status.OK) {
-                displayLocation(result[0].address.address_name);
+                displayLocation(result[0].address_name);
             }
         }
 
