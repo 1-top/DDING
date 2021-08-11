@@ -17,10 +17,11 @@
     </div>
     <div class="form-container">
         <form action="" method="POST" class="report-form visually-hidden">
+            {% csrf_token %}
             <div>
                 <h4>메뉴</h4>
                 <div class="category-container">
-                    <input type="radio" name="category" id="shaved-ice" value="shaved-ice" hidden>
+                    <input type="radio" name="category" id="shaved-ice" value="shaved-ice" hidden checked>
                     <label for="shaved-ice"><img src="{% static 'images/shaved-ice.png' %}" alt=""></label>
                     <input type="radio" name="category" id="icecream" value="icecream" hidden>
                     <label for="icecream"><img src="{% static 'images/ice-cream.png' %}" alt=""></label>
@@ -31,6 +32,8 @@
             <div class="location-container">
                 <h4>위치</h4>
                 <input type="text" name="location" id="location" placeholder="위치를 검색해주세요">
+                <input type="hidden" name="latitude" value="">
+                <input type="hidden" name="longitude" value="">
             </div>
             <div>
                 <h4>가게 이름</h4>
