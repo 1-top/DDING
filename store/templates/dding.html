@@ -211,10 +211,14 @@
         // 가게 정보 가져와서 마커 생성하기
         var positions = [];
 
+        var placeOverlay = new kakao.maps.CustomOverlay({zIndex:3});
+
         {% for store in storeList %}
             positions.push({
                 title: "{{ store.name }}",
-                latlng: new kakao.maps.LatLng({{ store.latitude }}, {{ store.longitude }})
+                latlng: new kakao.maps.LatLng({{ store.latitude }}, {{ store.longitude }}),
+                category: "{{ store.category }}",
+                location: "{{ store.location }}"
             })
         {% endfor %}
 
@@ -223,54 +227,26 @@
             var marker = new kakao.maps.Marker({
                 map: map, // 마커를 표시할 지도
                 position: positions[i].latlng, // 마커를 표시할 위치
-                title: positions[i].title, // 마커의 타이틀, 마커에 마우스를 올리면 타이틀이 표시됩니다
-                image: markerImage // 마커 이미지
+                image : markerImage, // 마커 이미지
+                clickable: true
             });
+
+            // event listener 등록
+            (function(marker, place) {
+                kakao.maps.event.addListener(marker, 'click', function() {
+                    displayPlaceInfo(place);
+                });
+            })(marker, positions[i]);
         }
 
-
-        /////////////////////////////////////////////////////////////////////////
-        ///가게 등록 시, 사용자가 위치 찍으면, 마커로 표시하고, 주소 받아와서,///////
-        ///input value로 넣기//(새 마커 생성은 팝업 활성화시에만 가능)////////////
-        /////////////////////////////////////////////////////////////////////
-        // 추후 다시 처리
-
-        igloo.addEventListener('click', () => {
-            //if(메뉴 선택){
-            var marker = new kakao.maps.Marker(), // 클릭한 위치를 표시할 마커입니다
-                infowindow = new kakao.maps.InfoWindow({zindex: 1}); // 클릭한 위치에 대한 주소를 표시할 인포윈도우입니다
-
-            // 현재 지도 중심좌표로 주소를 검색해서 지도 좌측 상단에 표시합니다
-            searchAddrFromCoords(map.getCenter(), displayCenterInfo);
-
-            // 지도를 클릭했을 때 클릭 위치 좌표에 대한 주소정보를 표시하도록 이벤트를 등록합니다
-            kakao.maps.event.addListener(map, 'click', function (mouseEvent) {
-                searchDetailAddrFromCoords(mouseEvent.latLng, function (result, status) {
-                    if (status === kakao.maps.services.Status.OK) {
-                        var detailAddr = !!result[0].road_address ? '<div>도로명주소:' + result[0].road_address.address_name + '</div>' : '';
-                        detailAddr += '<div>지번 주소 : ' + result[0].address.address_name + '</div>';
-
-                        var content = '<div style="padding:30px;">' +
-                            detailAddr + " " + " " +
-                            '</div>';
-
-                        // 마커를 클릭한 위치에 표시합니다
-                        marker.setPosition(mouseEvent.latLng);
-                        marker.setMap(map);
-
-                        // 인포윈도우에 클릭한 위치에 대한 법정동 상세 주소정보를 표시합니다
-                        infowindow.setContent(content);
-                        infowindow.open(map, marker);
-
-                        //var latlng = mouseEvent.latLng;
-                        // var lat = latlng.getLat();  //위도
-                        //  $('input[name=latitude]').attr('value',lat);
-                        //  var lng = latlng.getLng();  //경도
-                        //  $('input[name=longitude]').attr('value',lng);
-                    }
-                });
-            });
-        });
+        // 오버레이 설정해서 보여주기
+        function displayPlaceInfo (place) {
+            var img = place.category === 'icecream' ? "{% static 'images/ice-cream.png' %}" : place.category === 'shaved-ice' ? "{% static 'images/shaved-ice.png' %}" : "{% static 'images/soda.png' %}"
+            var content = "<div class='overlay-wrap'><img src=" + img + "/>" + "<div><h3>" + place.title + "</h3><p>" + place.location + "</p></div></div>"
+            placeOverlay.setContent(content);
+            placeOverlay.setPosition(place.latlng);
+            placeOverlay.setMap(map);
+        }
     </script>
 {% endblock %}
 

@@ -144,3 +144,42 @@
 .visually-hidden {
     visibility: hidden;
 }
+
+.overlay-wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: absolute;
+    top: -180px;
+    left: -110px;
+    width: 230px;
+    height: 110px;
+    background-color: #C9F6F9;
+    border: 10px solid #87E2E7;
+    border-radius: 5px;
+    padding: 10px;
+}
+
+.overlay-wrap > div {
+    width: 130px;
+}
+
+.overlay-wrap img {
+    width: 25%;
+}
+
+.overlay-wrap h3 {
+    font-size: 16px;
+    font-weight: 500;
+    color: #222;
+    line-height: 1.2;
+    margin-bottom: 10px;
+}
+
+.overlay-wrap p {
+    font-size: 12px;
+    font-weight: 400;
+    color: #222;
+    word-break: break-word;
+    white-space: normal;
+}
