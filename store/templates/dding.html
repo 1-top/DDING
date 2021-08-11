@@ -21,23 +21,23 @@
             <div>
                 <h4>메뉴</h4>
                 <div class="category-container">
-                    <input type="radio" name="category" id="shaved-ice" value="shaved-ice" hidden checked>
+                    <input type="radio" name="category" id="shaved-ice" value="shaved-ice" checked>
                     <label for="shaved-ice"><img src="{% static 'images/shaved-ice.png' %}" alt=""></label>
-                    <input type="radio" name="category" id="icecream" value="icecream" hidden>
+                    <input type="radio" name="category" id="icecream" value="icecream">
                     <label for="icecream"><img src="{% static 'images/ice-cream.png' %}" alt=""></label>
-                    <input type="radio" name="category" id="soda" value="soda" hidden>
+                    <input type="radio" name="category" id="soda" value="soda">
                     <label for="soda"><img src="{% static 'images/soda.png' %}" alt=""></label>
                 </div>
             </div>
             <div class="location-container">
                 <h4>위치</h4>
-                <input type="text" name="location" id="location" placeholder="위치를 검색해주세요">
-                <input type="hidden" name="latitude" value="">
-                <input type="hidden" name="longitude" value="">
+                <input type="text" name="location" id="location" placeholder="위치를 선택해주세요" readonly />
+                <input type="hidden" name="latitude" id="latitude" value="" />
+                <input type="hidden" name="longitude" id="longitude" value="" />
             </div>
             <div>
                 <h4>가게 이름</h4>
-                <input type="text" name="storename" id="storename" placeholder="가게 이름을 입력해주세요">
+                <input type="text" name="storename" id="storename" placeholder="가게 이름을 입력해주세요" />
             </div>
             <button type="submit"><img src="{% static 'images/right-arrow.png' %}" alt="" width="15" height="15">
                 제보하기
@@ -66,6 +66,7 @@
         // 주소-좌표 변환 객체 생성
         const geocoder = new kakao.maps.services.Geocoder();
 
+        // 윈도우 로드 시 사용자 위치 가져오기
         window.addEventListener('load', () => {
             kakao.maps.load(() => {
                 if (navigator.geolocation) {
@@ -104,31 +105,55 @@
         const searchForm = document.querySelector('#search-form');
         searchForm.addEventListener('submit', moveLocation);
 
-        // 좌표 이동 시 상단 주소 변경
+        // 사용자가 클릭한 위치 input value에 넣어주기
+        function displayStoreLocation(location) {
+            var locationInput = document.getElementById('location');
+            locationInput.value = location;
+        }
 
-        kakao.maps.event.addListener(map, 'idle', function () {
-            searchAddrFromCoords(map.getCenter(), displayCenterInfo);
-        });
+        // 상단에 지도 중심 좌표에서 주소 가져와서 넣어주기
+        function displayLocation(location) {
+            var infoDiv = document.querySelector('.address');
+            infoDiv.innerHTML = location;
+        }
 
+        // 대략적인 주소 검색
         function searchAddrFromCoords(coords, callback) {
             geocoder.coord2RegionCode(coords.getLng(), coords.getLat(), callback);
         }
 
-        // 지도 중심 좌표에 대한 주소 정보를 표출하는 함수
-        function displayCenterInfo(result, status) {
-            if (status === kakao.maps.services.Status.OK) {
-                var infoDiv = document.querySelector('.address');
+        // 상세 주소 검색
+        function searchDetailAddrFromCoords(coords, callback) {
+            var latitude = document.getElementById('latitude');
+            var longitude = document.getElementById('longitude');
+            latitude.value = coords.getLat();
+            longitude.value = coords.getLng();
+            console.log(latitude.value);
+            geocoder.coord2Address(coords.getLng(), coords.getLat(), callback);
+        }
 
+        // 중심 좌표 변경 시 상단 주소 변경해주는 event listener
+        kakao.maps.event.addListener(map, 'idle', function () {
+            searchAddrFromCoords(map.getCenter(), coordToLocation);
+        });
+
+        // 지도 중심 좌표에 대한 주소 정보를 가져오는 함수
+        function coordToLocation(result, status) {
+            if (status === kakao.maps.services.Status.OK) {
+                displayLocation(result[0].address.address_name);
+            }
+        }
+
+        // 사용자가 클릭한 좌표에 대한 가게 정보 가져오는 함수
+        function coordToStoreLocation(result, status) {
+            if (status === kakao.maps.services.Status.OK) {
                 for (var i = 0; i < result.length; i++) {
-                    // 행정동의 region_type 값은 'H'
-                    if (result[i].region_type === 'H') {
-                        infoDiv.innerHTML = result[i].address_name;
-                        break;
-                    }
+                    displayStoreLocation(result[0].address.address_name);
                 }
             }
         }
 
+        // 이글루 클릭 시 처리
         const reportForm = document.querySelector('.report-form');
         const snowman = document.querySelector('.snowman');
         const igloo = document.querySelector('.igloo');
@@ -136,12 +161,78 @@
             if (reportForm.classList.contains('visually-hidden')) {
                 reportForm.classList.remove('visually-hidden');
                 snowman.classList.remove('visually-hidden');
+                kakao.maps.event.addListener(map, 'click', handleClick);
             } else {
                 reportForm.classList.add('visually-hidden');
                 snowman.classList.add('visually-hidden');
+                marker.setMap(null);
+                kakao.maps.event.removeListener(map, 'click', handleClick);
+                document.getElementById('location').value = '';
+                document.getElementById('latitude').value = '';
+                document.getElementById('longitude').value = '';
             }
         });
 
+
+        // 마커 생성
+        var marker = new kakao.maps.Marker({});
+
+        // 사용자가 클릭 시 마커 보여주기
+        function handleClick(event) {
+            // 클릭한 위도, 경도 정보를 가져옵니다
+            var latlng = event.latLng;
+
+            // 마커 위치를 클릭한 위치로 옮깁니다
+
+            marker.setPosition(latlng);
+            marker.setMap(map);
+
+            searchDetailAddrFromCoords(latlng, coordToStoreLocation);
+        }
+
+
+        /////////////////////////////////////////////////////////////////////////
+        ///가게 등록 시, 사용자가 위치 찍으면, 마커로 표시하고, 주소 받아와서,///////
+        ///input value로 넣기//(새 마커 생성은 팝업 활성화시에만 가능)////////////
+        /////////////////////////////////////////////////////////////////////
+        // 추후 다시 처리
+
+        igloo.addEventListener('click', () => {
+            //if(메뉴 선택){
+            var marker = new kakao.maps.Marker(), // 클릭한 위치를 표시할 마커입니다
+                infowindow = new kakao.maps.InfoWindow({zindex:1}); // 클릭한 위치에 대한 주소를 표시할 인포윈도우입니다
+
+            // 현재 지도 중심좌표로 주소를 검색해서 지도 좌측 상단에 표시합니다
+            searchAddrFromCoords(map.getCenter(), displayCenterInfo);
+
+            // 지도를 클릭했을 때 클릭 위치 좌표에 대한 주소정보를 표시하도록 이벤트를 등록합니다
+            kakao.maps.event.addListener(map, 'click', function(mouseEvent) {
+                searchDetailAddrFromCoords(mouseEvent.latLng, function(result, status) {
+                    if (status === kakao.maps.services.Status.OK) {
+                        var detailAddr = !!result[0].road_address ? '<div>도로명주소:' + result[0].road_address.address_name + '</div>' : '';
+                        detailAddr += '<div>지번 주소 : ' +  result[0].address.address_name + '</div>';
+
+                        var content = '<div style="padding:30px;">' +
+                            detailAddr +  " " + " " +
+                            '</div>';
+
+                        // 마커를 클릭한 위치에 표시합니다
+                        marker.setPosition(mouseEvent.latLng);
+                        marker.setMap(map);
+
+                        // 인포윈도우에 클릭한 위치에 대한 법정동 상세 주소정보를 표시합니다
+                        infowindow.setContent(content);
+                        infowindow.open(map, marker);
+
+                        //var latlng = mouseEvent.latLng;
+                        // var lat = latlng.getLat();  //위도
+                        //  $('input[name=latitude]').attr('value',lat);
+                        //  var lng = latlng.getLng();  //경도
+                        //  $('input[name=longitude]').attr('value',lng);
+                    }
+                });
+            });
+        });
     </script>
 {% endblock %}
 
