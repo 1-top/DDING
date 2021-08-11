@@ -9,5 +9,8 @@ def home(request):
 
 
 def dding(request):
-    SECRET_KEY = get_secret('KAKAO')
+    if request.method == 'GET':
+        SECRET_KEY = get_secret('KAKAO')
+    elif request.method == 'POST':
+        pass
     return render(request, 'dding.html', {'key': SECRET_KEY})
