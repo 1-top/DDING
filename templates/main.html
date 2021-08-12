@@ -7,6 +7,22 @@
 {% block content %}
     <div id="main">
         <h2>지금 당장 띵해지고 싶을 때<br>가장 가까운 가게를 찾아드려요!</h2>
-        <button id="main-btn">지금 당장 띵해지기</button>
+        <button id="main-btn" onclick="location.href='/dding'" style="cursor:pointer">지금 당장 띵해지기</button>
     </div>
+    <script>
+        let myLocation = sessionStorage.getItem('location');
+        if (!myLocation) {
+            window.addEventListener('load', () => {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition((position) => {
+                        const {coords: {longitude: lng, latitude: lat}} = position
+                        sessionStorage.setItem('location', JSON.stringify({
+                            'longitude': position.coords.longitude,
+                            'latitude': position.coords.latitude
+                        }));
+                    });
+                }
+            })
+        }
+    </script>
 {% endblock %}

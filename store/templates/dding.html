@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block link %}
+    {% static 'css/dding.css' %}
+{% endblock %}
+
+{% block content %}
+    <div id="map"></div>
+    <div class="search-box">
+        <div class="show-address">
+            <p class="address"></p>
+        </div>
+        <form action="#" id="search-form">
+            <input type="text" name="address" placeholder="어디에서 찾으세요?"/>
+        </form>
+    </div>
+    <div class="form-container">
+        <form action="" method="POST" class="report-form visually-hidden">
+            {% csrf_token %}
+            <div>
+                <h4>메뉴</h4>
+                <div class="category-container">
+                    <input type="radio" name="category" id="shaved-ice" value="shaved-ice" checked>
+                    <label for="shaved-ice"><img src="{% static 'images/shaved-ice.png' %}" alt=""></label>
+                    <input type="radio" name="category" id="icecream" value="icecream">
+                    <label for="icecream"><img src="{% static 'images/ice-cream.png' %}" alt=""></label>
+                    <input type="radio" name="category" id="soda" value="soda">
+                    <label for="soda"><img src="{% static 'images/soda.png' %}" alt=""></label>
+                </div>
+            </div>
+            <div class="location-container">
+                <h4>위치</h4>
+                <input type="text" name="location" id="location" placeholder="위치를 선택해주세요" readonly/>
+                <input type="hidden" name="latitude" id="latitude" value=""/>
+                <input type="hidden" name="longitude" id="longitude" value=""/>
+            </div>
+            <div>
+                <h4>가게 이름</h4>
+                <input type="text" name="storename" id="storename" placeholder="가게 이름을 입력해주세요"/>
+            </div>
+            <button type="submit"><img src="{% static 'images/right-arrow.png' %}" alt="" width="15" height="15">
+                제보하기
+            </button>
+        </form>
+        <div class="report-button-container">
+            <div class="snowman visually-hidden">
+                <img src="{% static 'images/snowman.png' %}" alt="" width="77">
+            </div>
+            <div class="igloo">
+                <img src="{% static 'images/igloo.png' %}" alt="" width="123">
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript"
+            src="//dapi.kakao.com/v2/maps/sdk.js?appkey={{ key }}&libraries=services,clusterer,drawing"></script>
+    <script>
+        const mapContainer = document.getElementById('map');
+        const mapOption = {
+            center: new kakao.maps.LatLng(33.450701, 126.570667),
+            level: 4
+        };
+        // 지도 생성
+        const map = new kakao.maps.Map(mapContainer, mapOption);
+
+        // 주소-좌표 변환 객체 생성
+        const geocoder = new kakao.maps.services.Geocoder();
+
+        // 윈도우 로드 시 사용자 위치 가져오기
+        window.addEventListener('load', () => {
+            let myLocation = sessionStorage.getItem('location');
+            if (myLocation) {
+                let {longitude, latitude} = JSON.parse(sessionStorage.getItem('location'));
+                geocoder.coord2RegionCode(longitude, latitude, (result, status) => {
+                    if (status === kakao.maps.services.Status.OK) {
+                        pAddress = document.querySelector('.address')
+                        pAddress.innerHTML = result[0].address_name;
+                    }
+                });
+                map.setCenter(new kakao.maps.LatLng(latitude, longitude))
+            } else {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition((position) => {
+                        const {coords: {longitude: lng, latitude: lat}} = position
+                        geocoder.coord2RegionCode(lng, lat, (result, status) => {
+                            if (status === kakao.maps.services.Status.OK) {
+                                pAddress = document.querySelector('.address')
+                                pAddress.innerHTML = result[0].address_name;
+                                console.log(result[0].address_name)
+                            }
+                        });
+                        map.setCenter(new kakao.maps.LatLng(lat, lng))
+                    });
+                }
+            }
+        })
+
+        // 위치 검색 후 이동
+
+        const changeMapCenter = (address) => {
+            geocoder.addressSearch(address, function (result, status) {
+                if (status === kakao.maps.services.Status.OK) {
+                    var coords = new kakao.maps.LatLng(result[0].y, result[0].x);
+                    map.setCenter(coords);
+                }
+            });
+        }
+
+        const moveLocation = (e) => {
+            e.preventDefault();
+            let address = e.target.elements.address.value;
+            changeMapCenter(address);
+        }
+
+        const searchForm = document.querySelector('#search-form');
+        searchForm.addEventListener('submit', moveLocation);
+
+        // 사용자가 클릭한 위치 input value에 넣어주기
+        function displayStoreLocation(location) {
+            var locationInput = document.getElementById('location');
+            locationInput.value = location;
+        }
+
+        // 상단에 지도 중심 좌표에서 주소 가져와서 넣어주기
+        function displayLocation(location) {
+            var infoDiv = document.querySelector('.address');
+            infoDiv.innerHTML = location;
+        }
+
+        // 대략적인 주소 검색
+        function searchAddrFromCoords(coords, callback) {
+            geocoder.coord2RegionCode(coords.getLng(), coords.getLat(), callback);
+        }
+
+        // 상세 주소 검색
+        function searchDetailAddrFromCoords(coords, callback) {
+            var latitude = document.getElementById('latitude');
+            var longitude = document.getElementById('longitude');
+            latitude.value = coords.getLat();
+            longitude.value = coords.getLng();
+            console.log(latitude.value);
+            geocoder.coord2Address(coords.getLng(), coords.getLat(), callback);
+        }
+
+        // 중심 좌표 변경 시 상단 주소 변경해주는 event listener
+        kakao.maps.event.addListener(map, 'idle', function () {
+            searchAddrFromCoords(map.getCenter(), coordToLocation);
+        });
+
+        // 지도 중심 좌표에 대한 주소 정보를 가져오는 함수
+        function coordToLocation(result, status) {
+            if (status === kakao.maps.services.Status.OK) {
+                displayLocation(result[0].address_name);
+            }
+        }
+
+        // 사용자가 클릭한 좌표에 대한 가게 정보 가져오는 함수
+        function coordToStoreLocation(result, status) {
+            if (status === kakao.maps.services.Status.OK) {
+                for (var i = 0; i < result.length; i++) {
+                    displayStoreLocation(result[0].address.address_name);
+                }
+            }
+        }
+
+        // 이글루 클릭 시 처리
+        const reportForm = document.querySelector('.report-form');
+        const snowman = document.querySelector('.snowman');
+        const igloo = document.querySelector('.igloo');
+        igloo.addEventListener('click', () => {
+            if (reportForm.classList.contains('visually-hidden')) {
+                reportForm.classList.remove('visually-hidden');
+                snowman.classList.remove('visually-hidden');
+                kakao.maps.event.addListener(map, 'click', handleClick);
+            } else {
+                reportForm.classList.add('visually-hidden');
+                snowman.classList.add('visually-hidden');
+                currentMarker.setMap(null);
+                kakao.maps.event.removeListener(map, 'click', handleClick);
+                document.getElementById('location').value = '';
+                document.getElementById('latitude').value = '';
+                document.getElementById('longitude').value = '';
+            }
+        });
+
+        var imageSrc = "{% static 'images/marker.png' %}",
+            imageSize = new kakao.maps.Size(45, 50),
+            imageOption = {offset: new kakao.maps.Point(22.5, 50)};
+
+        // 이미지 정보 가지는 마커 이미지 생성
+        var markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize, imageOption),
+            markerPosition = new kakao.maps.LatLng(37.54699, 127.09598); // 마커가 표시될 위치
+
+        // 사용자 클릭 시 표시될 마커 생성
+        var currentMarker = new kakao.maps.Marker({
+            image: markerImage
+        });
+
+        // 사용자 클릭 시 마커 보여주기
+        function handleClick(event) {
+            // 클릭한 위도, 경도 정보를 가져옵니다
+            var latlng = event.latLng;
+
+            // 마커 위치를 클릭한 위치로 옮김
+            currentMarker.setPosition(latlng);
+            currentMarker.setMap(map);
+
+            searchDetailAddrFromCoords(latlng, coordToStoreLocation);
+        }
+
+        // 가게 정보 가져와서 마커 생성하기
+        var positions = [];
+
+        var placeOverlay = new kakao.maps.CustomOverlay({zIndex:3});
+
+        {% for store in storeList %}
+            positions.push({
+                title: "{{ store.name }}",
+                latlng: new kakao.maps.LatLng({{ store.latitude }}, {{ store.longitude }}),
+                category: "{{ store.category }}",
+                location: "{{ store.location }}"
+            })
+        {% endfor %}
+
+        for (var i = 0; i < positions.length; i++) {
+            // 마커 생성
+            var marker = new kakao.maps.Marker({
+                map: map, // 마커를 표시할 지도
+                position: positions[i].latlng, // 마커를 표시할 위치
+                image : markerImage, // 마커 이미지
+                clickable: true
+            });
+
+            // event listener 등록
+            (function(marker, place) {
+                kakao.maps.event.addListener(marker, 'click', function() {
+                    displayPlaceInfo(place);
+                });
+            })(marker, positions[i]);
+        }
+
+        // 오버레이 설정해서 보여주기
+        function displayPlaceInfo (place) {
+            var img = place.category === 'icecream' ? "{% static 'images/ice-cream.png' %}" : place.category === 'shaved-ice' ? "{% static 'images/shaved-ice.png' %}" : "{% static 'images/soda.png' %}"
+            var content = "<div class='overlay-wrap'><img src=" + img + "/>" + "<div><h3>" + place.title + "</h3><p>" + place.location + "</p></div></div>"
+            placeOverlay.setContent(content);
+            placeOverlay.setPosition(place.latlng);
+            placeOverlay.setMap(map);
+        }
+    </script>
+{% endblock %}
+
